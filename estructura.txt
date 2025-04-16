@@ -1,0 +1,157 @@
+nest_graphql/
+├── src/                            
+│   ├── auth/                             # Microservicio de autenticación  
+│   │   ├── auth.module.ts                # Módulo de autenticación
+│   │   ├── application/                  # Lógica de aplicación (casos de uso)     
+│   │   │   ├── dto/                      # DTOs para entrada/salida
+│   │   │   │   ├── login.dto.ts          # DTO para login
+│   │   │   │   ├── refresh-token.dto.ts  # DTO para refrescar el token (falta)
+│   │   │   │   ├── register.dto.ts       # DTO para registro (falta)
+│   │   │   │   └── token-response.dto.ts # DTO para respuesta de token (falta)
+│   │   ├── constants/                    # Constantes de autenticación
+│   │   │   ├── auth.constants.ts         # Constantes de autenticación
+│   │   ├── domain/                       # Lógica de dominio      
+│   │   │   ├── entities/                 # Entidades de negocio
+│   │   │   │   ├── user-token.entity.ts     # Entidad de token de usuario
+│   │   │   │   └── auth-session.entity.ts   # Entidad de sesión de autenticación
+│   │   │   ├── interfaces/                  # Repositorios abstractos
+│   │   │   │   ├── TokenTypeormRepository.ts # Repositorio de token (TypeORM)
+│   │   │   │   └── ITokenRepository.ts      # Repositorio de token
+│   │   │   └── services/                     # Servicios de dominio
+│   │   │   │   ├── token.service.ts          # Servicio de token
+│   │   │       └── auth.service.ts           
+│   │   ├── infrastructure/               # Infraestructura (BD, APIs externas)        
+│   │   │   ├── controllers/              # Controladores de autenticación
+│   │   │   │   ├── auth.controller.ts  # Controlador de autenticación
+│   │   │   │   └── oauth.controller.ts # Controlador de OAuth de Google (falta)
+│   │   │   ├── guards/
+│   │   │   │   └── jwt-auth.guard.ts     # Guard de JWT
+│   │   │   ├── strategies/               # Estrategias de autenticación
+│   │   │   │   ├── jwt.strategy.ts       # Passport JWT
+│   │   │   │   └── oauth.strategy.ts     # Passport OAuth2 'Google' (falta)
+│   │   │   └── middleware/
+│   │   │       └── token.middleware.ts   # Middleware global
+│   │   └── presentation/                 # Controladores y GraphQL Resolvers
+│   │       └── resolvers/                # Resolvers de GraphQL
+│   │           └── auth.resolver.ts      # Si usas GraphQL (falta)
+│   ├── core/                       # Core de la aplicación principal
+│   │   ├── app.module.ts           # Módulo raíz de la aplicación principal
+│   │   ├── app.controller.ts       # Controlador raíz (opcional) 
+│   │   ├── app.service.ts          # Servicio raíz (opcional)
+│   │   ├── app.resolver.ts           # resolvers de la aplicación principal
+│   │   ├── app.controller.spec.ts  # Pruebas del controlador raíz
+│   ├── user/                       # Microservicio de Usuarios
+│   │   ├── user.module.ts          # Módulo de usuario
+│   │   ├── application/            # Lógica de aplicación (casos de uso)
+│   │   │   ├── dtos/                # DTOs para entrada/salida
+│   │   │   │   └── user.dto.ts             # DTO de usuario
+│   │   │   ├── commands/           # Comandos (CQRS opcional)
+│   │   │   └── queries/            # Queries (CQRS opcional)
+│   │   ├── domain/                 # Lógica de dominio
+│   │   │   ├── entities/           # Entidades de negocio
+│   │   │   │   └── user.entity.ts  # Entidad de usuario
+│   │   │   ├── interfaces/         # Repositorios abstractos
+│   │   │   │   └── IUserRepository.ts  # Repositorio de usuario
+│   │   │   ├── schemas/            # Schemas de GraphQL
+│   │   │   │   └── schema.gql  # Schema de GraphQL
+│   │   │   └── services/           # Servicios de dominio
+│   │   │       └── user.service.ts # Servicio de usuario       
+│   │   ├── infrastructure/         # Infraestructura (BD, APIs externas)
+│   │   │   ├── database/
+│   │   │   │   ├── migrations/     # Migraciones (TypeORM/Prisma)
+│   │   │   │   ├── repositories/   # Implementaciones concretas de repositorios
+│   │   │   │   │   └── userRepository.ts  # Repositorio de usuario
+│   │   │   │   └── schemas/        # Schemas de BD (si usas NoSQL)
+│   │   │   ├── migrations/         # Migraciones (TypeORM/Prisma)
+│   │   │   └── schemas/             # Schemas de BD (si usas NoSQL)
+│   │   │       └── user.schema.ts  # Schema de usuario (si usas NoSQL para Mongoose pero no es necesario porque tengo Postgres)
+│   │   └── presentation/           # Controladores y GraphQL Resolvers
+│   │       ├── controllers/        # REST (opcional)
+│   │       └── resolvers/          # Resolvers de GraphQL
+│   │           └── user.resolver.ts # Resolver de usuario
+│   ├── shared/                     # Módulos compartidos
+│   │   └── database/               # Configuración global de BD
+│   │       ├── config/             # Configuración de la base de datos
+│   │       │   └── typeorm.config.ts # Configuración de TypeORM
+│   │       ├── connections/        # Conexiones (TypeORM, Mongoose)
+│   │       │   └── database.providers.ts # Proveedores de bases de datos
+│   │       ├── migrations/         # Migraciones globales
+│   │       ├── seeds/              # Datos iniciales
+│   │       └── data-source.ts         # Archivo de configuración de TypeORM
+│   └── main.ts                     # Punto de entrada
+├── test/                           # Pruebas
+│   ├── user/                       # Pruebas del microservicio de usuario
+│   │   ├── user.service.spec.ts    # Pruebas del servicio de usuario
+│   │   ├── user.resolver.spec.ts   # Pruebas del resolver de usuario
+│   │   └── ...                     # Otras pruebas
+│   ├── app.e2e-spec.ts            # Pruebas de integración de la aplicación
+│   └── jest.e2e.js                 # Configuración de Jest
+├── .env                            # Variables de entorno
+├── .eslintrc.js                    # Configuración de ESLint
+├── .prettierrc                     # Configuración de Prettier
+├── .gitignore                      # Archivos a ignorar por Git
+├── package.json                    # Dependencias y scripts
+├── package-lock.json               # Bloqueo de dependencias
+├── tsconfig.json                  # Configuración de TypeScript
+├── tsconfig.build.json            # Configuración de TypeScript para producción
+├── nest-cli.json                  # Configuración de Nest CLI
+├── README.md                       # Documentación del proyecto
+└── jest.config.js                 # Configuración de Jest
+```
+# Estructura de carpetas para un proyecto NestJS con GraphQL y CQRS
+Esta estructura de carpetas está diseñada para un proyecto NestJS que utiliza GraphQL y sigue el patrón CQRS (Command Query Responsibility Segregation). La idea es mantener una separación clara entre las diferentes capas de la aplicación, lo que facilita el mantenimiento y la escalabilidad.
+## Descripción de las carpetas
+- **src/**: Contiene el código fuente de la aplicación.
+  - **core/**: Contiene el módulo raíz de la aplicación y sus controladores/servicios.
+  - **user/**: Microservicio de Usuarios, que incluye la lógica de aplicación, dominio, infraestructura y presentación.
+    - **application/**: Contiene la lógica de aplicación, incluyendo DTOs, comandos y consultas.
+    - **domain/**: Contiene la lógica de dominio, incluyendo entidades, interfaces y servicios.
+    - **infrastructure/**: Contiene la infraestructura necesaria para el microservicio, como bases de datos y servicios externos.
+    - **presentation/**: Contiene los controladores y resolvers de GraphQL.
+  - **shared/**: Módulos compartidos entre diferentes microservicios o partes de la aplicación.
+  - **main.ts**: Punto de entrada de la aplicación.
+- **test/**: Contiene las pruebas del proyecto, organizadas por microservicio.
+- **.env**: Archivo de configuración de variables de entorno.
+- **.eslintrc.js**: Configuración de ESLint para el proyecto.
+- **.prettierrc**: Configuración de Prettier para el formato del código.
+- **.gitignore**: Archivos y carpetas que deben ser ignorados por Git.
+- **package.json**: Archivo de configuración de dependencias y scripts del proyecto.
+- **package-lock.json**: Archivo de bloqueo de dependencias.
+- **tsconfig.json**: Configuración de TypeScript para el proyecto.
+- **tsconfig.build.json**: Configuración de TypeScript para la construcción del proyecto.
+- **nest-cli.json**: Configuración de Nest CLI.
+- **README.md**: Documentación del proyecto.
+- **jest.config.js**: Configuración de Jest para las pruebas.
+## Notas
+- Esta estructura es flexible y puede adaptarse a las necesidades específicas de tu proyecto.
+- Puedes agregar o eliminar carpetas según sea necesario.
+- Asegúrate de mantener una buena documentación y comentarios en el código para facilitar la comprensión del proyecto a otros desarrolladores.
+- Considera la posibilidad de utilizar herramientas de automatización para la generación de código y migraciones, como TypeORM o Prisma, para facilitar el trabajo con bases de datos.
+- Si decides utilizar CQRS, asegúrate de implementar correctamente los comandos y consultas, y considera la posibilidad de utilizar una biblioteca como `@nestjs/cqrs` para facilitar la implementación.
+- La carpeta `infrastructure` puede contener configuraciones específicas para diferentes entornos (desarrollo, producción, etc.) si es necesario.
+- La carpeta `shared` puede contener módulos y servicios que son utilizados por múltiples microservicios, como la configuración de la base de datos o servicios comunes.
+- Asegúrate de mantener una buena separación de preocupaciones entre las diferentes capas de la aplicación para facilitar el mantenimiento y la escalabilidad.
+- Considera la posibilidad de utilizar herramientas de documentación automática, como Swagger o GraphQL Playground, para facilitar la exploración de la API.
+- Si utilizas GraphQL, asegúrate de definir claramente los tipos y resolvers en la carpeta `presentation`, y considera la posibilidad de utilizar herramientas como Apollo Server para facilitar la implementación.
+- La carpeta `test` debe contener pruebas unitarias y de integración para garantizar la calidad del código y la funcionalidad de la aplicación.
+- Considera la posibilidad de utilizar herramientas de análisis estático y de calidad del código, como SonarQube o CodeClimate, para mantener un alto estándar de calidad en el proyecto.
+- Mantén el archivo `.env` fuera del control de versiones para proteger la información sensible, como credenciales de bases de datos y claves API.
+- Utiliza un gestor de dependencias como `npm` o `yarn` para facilitar la instalación y actualización de las dependencias del proyecto.
+- Asegúrate de seguir las mejores prácticas de seguridad al desarrollar la aplicación, como la validación de entradas, la gestión de errores y la protección contra ataques comunes (XSS, CSRF, etc.).
+- **Considera la posibilidad de implementar un sistema de autenticación y autorización para proteger las rutas y recursos de la aplicación.**
+- **Si utilizas TypeORM o Prisma, asegúrate de definir correctamente las entidades y relaciones en la carpeta `domain`, y considera la posibilidad de utilizar migraciones para gestionar los cambios en la base de datos.**
+- **Si utilizas un sistema de colas o mensajería (como RabbitMQ o Kafka), considera la posibilidad de crear una carpeta `messaging` dentro de `infrastructure` para gestionar la comunicación entre microservicios.**
+- **Si utilizas un sistema de caché (como Redis), considera la posibilidad de crear una carpeta `cache` dentro de `infrastructure` para gestionar la caché de la aplicación.**
+- **Si utilizas un sistema de logging (como Winston o Pino), considera la posibilidad de crear una carpeta `logging` dentro de `infrastructure` para gestionar el registro de eventos y errores en la aplicación.**
+- **Si utilizas un sistema de pruebas automatizadas (como Cypress o Puppeteer), considera la posibilidad de crear una carpeta `e2e` dentro de `test` para gestionar las pruebas de extremo a extremo.**
+- **Si utilizas un sistema de integración continua (como GitHub Actions o Travis CI), considera la posibilidad de crear un archivo de configuración específico para gestionar la integración y despliegue continuo del proyecto.**
+- **Si utilizas un sistema de despliegue (como Docker o Kubernetes), considera la posibilidad de crear un archivo `Dockerfile` y/o `docker-compose.yml` para gestionar el despliegue de la aplicación.**
+- **Si utilizas un sistema de monitorización (como Prometheus o Grafana), considera la posibilidad de crear una carpeta `monitoring` dentro de `infrastructure` para gestionar la monitorización de la aplicación.**
+- **Si utilizas un sistema de gestión de errores (como Sentry o Rollbar), considera la posibilidad de crear una carpeta `error-handling` dentro de `infrastructure` para gestionar el manejo de errores en la aplicación.**
+- **Si utilizas un sistema de gestión de configuraciones (como Consul o etcd), considera la posibilidad de crear una carpeta `config-management` dentro de `infrastructure` para gestionar la configuración de la aplicación.**
+- **Si utilizas un sistema de gestión de secretos (como HashiCorp Vault o AWS Secrets Manager), considera la posibilidad de crear una carpeta `secrets-management` dentro de `infrastructure` para gestionar los secretos de la aplicación.**
+- **Si utilizas un sistema de gestión de versiones (como Git o Mercurial), asegúrate de seguir las mejores prácticas de control de versiones, como el uso de ramas, commits claros y mensajes descriptivos.**
+- **Si utilizas un sistema de gestión de dependencias (como Snyk, Renovate o Dependabot), considera la posibilidad de configurar alertas y actualizaciones automáticas para mantener las dependencias actualizadas y seguras.**
+- **Si utilizas un sistema de gestión de documentación (como Confluence o Notion), considera la posibilidad de crear una sección específica para la documentación del proyecto, incluyendo guías de instalación, uso y contribución.**
+- **Si utilizas un sistema de gestión de tareas (como Jira o Trello), considera la posibilidad de crear un tablero específico para gestionar las tareas y el progreso del proyecto.**
+- **Si utilizas un sistema de gestión de incidencias (como GitHub Issues o Jira), considera la posibilidad de crear un sistema de etiquetado y priorización para gestionar las incidencias y errores del proyecto.**

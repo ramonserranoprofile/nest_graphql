@@ -1,0 +1,290 @@
+1. Instala TypeORM globalmente:
+npm install -g typeorm
+2. Instala PostgreSQL:
+   - Descarga desde: https://www.postgresql.org/download/
+   - Sigue las instrucciones de instalación.
+3. Crea una base de datos:
+    - Abre PowerShell como Administrador.
+    - Ejecuta el siguiente comando:
+      ```bash
+      createdb nombre_base_datos
+      ```  
+4. Configura TypeORM:
+    - Crea un archivo ormconfig.json en la raíz del proyecto con el siguiente contenido:
+    ```json
+    {
+      "type": "postgres",
+      "host": "localhost",
+      "port": 5432,
+      "username": "postgres",
+      "password": "tu_contraseña",
+      "database": "nombre_base_datos",
+      "synchronize": true,
+      "logging": false,
+      "entities": ["src/modules/**/infra/typeorm/entities/*.ts"],
+      "migrations": ["src/shared/database/migrations/*.ts"],
+      "cli": {
+        "migrationsDir": "src/shared/database/migrations"
+      }
+    }
+    ```
+5. Crea una entidad:
+    - Crea un archivo User.ts en src/modules/users/infra/typeorm/entities con el siguiente contenido:
+     ```typescript
+     import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+    
+     @Entity('users')
+     export class User {
+        @PrimaryGeneratedColumn('uuid')
+        id: string;
+    
+        @Column()
+        name: string;
+    
+        @Column()
+        email: string;
+    
+        @Column()
+        password: string;
+     }
+     ```
+6. Crea un repositorio:
+    - Crea un archivo UserRepository.ts en src/modules/users/infra/typeorm/repositories con el siguiente contenido:
+     ```typescript
+     import { EntityRepository, Repository } from 'typeorm';
+     import { User } from '../entities/User';
+    
+     @EntityRepository(User)
+     export class UserRepository extends Repository<User> {}
+     ```
+7. Crea un servicio:
+    - Crea un archivo UserService.ts en src/modules/users/domain/services con el siguiente contenido:
+     ```typescript
+     import { getCustomRepository } from 'typeorm';
+     import { UserRepository } from '../infra/typeorm/repositories/UserRepository';
+     import { User } from '../infra/typeorm/entities/User';
+    
+     export class UserService {
+        private userRepository: UserRepository;
+    
+        constructor() {
+            this.userRepository = getCustomRepository(UserRepository);
+        }
+    
+        public async createUser(name: string, email: string, password: string): Promise<User> {
+            const user = this.userRepository.create({ name, email, password });
+            await this.userRepository.save(user);
+            return user;
+        }
+     }
+     ```
+8. Crea un resolver:
+    - Crea un archivo UserResolver.ts en src/modules/users/infra/graphql/resolvers con el siguiente contenido:
+     ```typescript
+     import { Resolver, Mutation, Arg } from 'type-graphql';
+     import { UserService } from '../../domain/services/UserService';
+     import { User } from '../typeorm/entities/User';
+    
+     @Resolver(User)
+     export class UserResolver {
+        private userService: UserService;
+    
+        constructor() {
+            this.userService = new UserService();
+        }
+    
+        @Mutation(() => User)
+        public async createUser(
+            @Arg('name') name: string,
+            @Arg('email') email: string,
+            @Arg('password') password: string
+        ): Promise<User> {
+            return this.userService.createUser(name, email, password);
+        }
+     }
+     ```
+9. Crea un módulo:
+    - Crea un archivo UserModule.ts en src/modules/users/infra/graphql/modules con el siguiente contenido:
+     ```typescript
+     import { UserResolver } from '../resolvers/UserResolver';
+    
+     export const UserModule = {
+        resolvers: [UserResolver],
+     };
+     ```
+10. Configura GraphQL:
+    - En tu archivo principal (ej. index.ts), importa y usa el módulo:
+     ```typescript
+     import { ApolloServer } from 'apollo-server';
+     import { buildSchema } from 'type-graphql';
+     import { UserModule } from './src/modules/users/infra/graphql/modules/UserModule';
+    
+     const schema = await buildSchema({
+        resolvers: UserModule.resolvers,
+     });
+    
+     const server = new ApolloServer({ schema });
+    
+     server.listen(4000, () => {
+        console.log('Servidor GraphQL corriendo en http://localhost:4000/graphql');
+     });
+     ```
+11. Ejecuta la aplicación:
+    - Inicia tu aplicación con el siguiente comando:
+     ```bash
+     npm run start
+     ```
+1. Genera el file Crear el archivo data-source.ts
+   - Crea un archivo data-source.ts en src/shared/database con el siguiente contenido:
+     ```typescript
+        import { DataSource } from "typeorm";
+        import { User } from "../../auth/domain/entities/user.entity"; // Ajusta según tus entidades
+
+        export const AppDataSource = new DataSource({
+            type: "postgres",
+            url: "postgres://postgres:postgres@localhost:5432/nest_graphql",
+            entities: [
+                "src/auth/domain/entities/*.entity{.ts,.js}"
+            ],
+            migrations: [
+                "src/shared/database/migrations/*{.ts,.js}"
+            ],
+            synchronize: false, // IMPORTANTE: Debe ser false en producción
+            logging: true,
+            migrationsTableName: "typeorm_migrations"
+        });
+     ```
+2. Genera una migración:
+typeorm-ts-node-commonjs migration:generate src/shared/database/migrations/CreateUserTable -d src/shared/database/data-source.ts  // para comoonjs
+
+ó para ESM : typeorm-ts-node-esm migration:generate src/shared/database/migrations/CreateUserTable -d src/shared/database/data-source.ts
+
+3- Ejecuta la migración:
+typeorm-ts-node-commonjs migration:run -d src/shared/database/data-source.ts // para comoonjs
+ó para ESM : typeorm-ts-node-esm migration:run -d src/shared/database/data-source.ts
+4- Verifica la migración:
+   - Abre tu cliente de PostgreSQL y verifica que la tabla de usuarios se haya creado correctamente.
+5- Verifica la conexión:
+   - Abre tu cliente de PostgreSQL y verifica que la base de datos esté activa.
+   - Puedes usar pgAdmin o cualquier otro cliente de PostgreSQL para conectarte a la base de datos y verificar que la tabla de usuarios se haya creado correctamente.
+
+
+Ejemplo de Flujo:
+GraphQL Query → UserResolver → UserService (dominio) → UserRepository (infraestructura) → BD.
+
+Usuario y Clave por Defecto:
+Campo	Valor por Defecto
+Usuario	postgres
+Contraseña	La que tú definiste durante la instalación.
+¿Cómo recuperar o cambiar la contraseña?:
+Si no recuerdas la contraseña o PostgreSQL no inicia:
+
+1. Verificar/modificar la contraseña:
+Abre PowerShell como Administrador.
+
+Ejecuta:
+
+bash
+Copy
+cd "C:\Program Files\PostgreSQL\13\bin"
+.\psql -U postgres -h localhost
+Si te pide contraseña y no la recuerdas, sigue los pasos de reinicio.
+
+2. Reiniciar contraseña (si no puedes acceder):
+Detén el servicio de PostgreSQL:
+
+bash
+Copy
+net stop postgresql-x64-13
+Edita el archivo pg_hba.conf:
+
+Ubícalo en:
+C:\Program Files\PostgreSQL\13\data\pg_hba.conf.
+
+Cambia esta línea:
+
+Copy
+host    all             all             127.0.0.1/32            md5
+Por:
+
+Copy
+host    all             all             127.0.0.1/32            trust
+Guarda el archivo.
+
+Inicia PostgreSQL:
+
+bash
+Copy
+net start postgresql-x64-13
+Conéctate sin contraseña y cambiala:
+
+bash
+Copy
+.\psql -U postgres -h localhost
+Dentro de psql:
+
+sql
+Copy
+ALTER USER postgres WITH PASSWORD 'nueva_contraseña';
+Restaura pg_hba.conf:
+
+Vuelve a cambiar trust por md5 y reinicia el servicio.
+
+Clave comúnmente olvidada:
+Si no modificaste nada durante la instalación, prueba con:
+
+Contraseña común: postgres, admin, 1234, o en blanco (aunque no es recomendable).
+
+
+# Mutacion GraphQL para Registro de usuario
+mutation RegisterUser {
+  register(input: {
+    name: "Usuario Demo",
+    email: "demo@example.com",
+    password: "password123"
+  }) {
+    id
+    email
+    name
+    access_token
+    expires_in
+  }
+}
+ Response :
+ {
+  "data": {
+    "register": {
+      "id": "f2e7ebf8-3e68-4b54-8724-be2e9162417d",
+      "email": "demo@example.com",
+      "name": "Usuario Demo",
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMmU3ZWJmOC0zZTY4LTRiNTQtODcyNC1iZTJlOTE2MjQxN2QiLCJlbWFpbCI6ImRlbW9AZXhhbXBsZS5jb20iLCJuYW1lIjoiVXN1YXJpbyBEZW1vIiwiaWF0IjoxNzQ0Njc1MjAzLCJleHAiOjE3NDQ2Nzg4MDN9.Ig0Y_XPTMzrfeLNP6WmTWqEoHKoVkpiM4uU6JIcYfqk",
+      "expires_in": "1h"
+    }
+  }
+}
+# Mutacion GraphQL para Login de usuario
+mutation LoginUser {
+  login(input: {
+    email: "demo@example.com",
+    password: "password123"
+  }) {
+    id
+    email
+    name
+    access_token
+    expires_in
+  }
+}
+
+Response :
+{
+  "data": {
+    "login": {
+      "id": "f2e7ebf8-3e68-4b54-8724-be2e9162417d",
+      "email": "demo@example.com",
+      "name": "Usuario Demo",
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMmU3ZWJmOC0zZTY4LTRiNTQtODcyNC1iZTJlOTE2MjQxN2QiLCJlbWFpbCI6ImRlbW9AZXhhbXBsZS5jb20iLCJuYW1lIjoiVXN1YXJpbyBEZW1vIiwiaWF0IjoxNzQ0Njc1NTIzLCJleHAiOjE3NDQ2NzkxMjN9.sKwkL7ii-uP06MfQM87DbTG0G38glGUkCWjwT0WdIDk",
+      "expires_in": "1h"
+    }
+  }
+}
